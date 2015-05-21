@@ -1,0 +1,138 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+#define dLeft   1
+#define dTop    2
+#define dRight  3
+#define dBottom  4
+
+static int width=30;
+static int height=20;
+static int totalCount = 0;
+static int posX=-1, posY=-1;
+// さっき向かった方向
+static int preDirect = 0;
+static vector< vector<int> > cells (width, vector<int>(height) );
+
+// --- 関数群　-- 
+// はじめに向かう方向
+void firstDrect();
+// 右周りで移動する
+int roundSearch(bool first=true);
+// 広い方向を探す
+bool widthSearch();
+void widthSearchCore();
+
+void firstDirect(){
+    int x = posX - 15;
+    int y = posY - 10;
+    cerr << "Start " << x << " " << y << endl;
+    if(abs(x) < abs(y)){
+        // y軸に動く
+        preDirect = (y<0)? dBottom : dTop;
+        cerr << "Y : " << preDirect << endl;
+    }else{
+        // x軸に動く
+        preDirect = (x<0)? dRight : dLeft;
+        cerr << "X : " << preDirect << endl;
+    }
+}
+
+int roundSearch(bool first){
+            switch(preDirect){
+            case dLeft:
+            if(posX != 0 && cells[posX-1][posY] == -1){
+                cerr << "check 1" << endl;
+                cout << "LEFT" << endl;
+                preDirect = dLeft;
+                return true;
+                break;
+            }
+            case dTop:
+            if(posY != 0 && cells[posX][posY-1] == -1){
+                cerr << "check 2" << endl;
+                cout << "UP" << endl;
+                preDirect = dTop;
+                return true;
+                break;
+            }
+            case dRight:
+            if(posX != width-1 && cells[posX+1][posY] == -1){
+                cerr << "check 3" << endl;
+                cout << "RIGHT" << endl;
+                preDirect = dRight;
+                return true;
+                break;
+            }
+            case dBottom:
+            if(posY != height-1 && cells[posX][posY+1] == -1){
+                cerr << "check 4" << endl;
+                cout << "DOWN" << endl;
+                preDirect = dBottom;
+                return true;
+                break;
+            }
+            default:
+//                cout << "LEFT" << endl;
+                preDirect = dLeft;
+                if(first){
+                    cerr << "check 5" << endl;
+                    roundSearch(false);
+                }else{
+                    cerr << "check 6" << endl;
+                    cout << "LEFT" << endl;
+                }
+                return false;
+                break;
+        }
+}
+
+int main()
+{
+	for(int w=0; w < width; w++){
+		for(int h=0; h < height; h++){
+			cells[w][h] = -1;
+		}
+	}
+
+    // game loop
+    while (1) {
+        int N; // total number of players (2 to 4).
+        int P; // your player number (0 to 3).
+        cin >> N >> P; cin.ignore();
+        for (int i = 0; i < N; i++) {
+            int X0; // starting X coordinate of lightcycle (or -1)
+            int Y0; // starting Y coordinate of lightcycle (or -1)
+            int X1; // starting X coordinate of lightcycle (can be the same as X0 if you play before this player)
+            int Y1; // starting Y coordinate of lightcycle (can be the same as Y0 if you play before this player)
+            cin >> X0 >> Y0 >> X1 >> Y1; cin.ignore();
+            cerr << X0 << ":" << Y0 << " " << X1 << ":" << Y1 << endl;
+            // 現在位置を初期化
+            if(P == i){
+                posX = X1;
+                posY = Y1;
+            }
+            // 仕様不可能な場所を埋めていく
+            // 一応踏んだユーザーの番号で埋める
+            if(X1 < 0 && Y1 < 0){
+                // 他人がしんだ
+                // ここで死んだ人のcellをリセットすること
+            }else{
+                cells[X1][Y1] = i;
+            }
+        }
+        
+        if(preDirect == 0){
+//            preDirect = dRight;
+            firstDirect();
+        }
+        
+        roundSearch();
+        
+
+    }
+
